@@ -1,6 +1,10 @@
 'use strict';
 var strictUriEncode = require('strict-uri-encode');
 
+function encode(value, strict) {
+	return strict ? strictUriEncode(value) : encodeURIComponent(value);
+}
+
 exports.extract = function (str) {
 	return str.split('?')[1] || '';
 };
@@ -45,7 +49,10 @@ exports.parse = function (str) {
 	return ret;
 };
 
-exports.stringify = function (obj) {
+exports.stringify = function (obj, opts) {
+	opts = opts || {};
+	opts.strict = opts.strict !== false;
+
 	return obj ? Object.keys(obj).sort().map(function (key) {
 		var val = obj[key];
 
@@ -66,16 +73,16 @@ exports.stringify = function (obj) {
 				}
 
 				if (val2 === null) {
-					result.push(strictUriEncode(key));
+					result.push(encode(key, opts.strict));
 				} else {
-					result.push(strictUriEncode(key) + '=' + strictUriEncode(val2));
+					result.push(encode(key, opts.strict) + '=' + encode(val2, opts.strict));
 				}
 			});
 
 			return result.join('&');
 		}
 
-		return strictUriEncode(key) + '=' + strictUriEncode(val);
+		return encode(key, opts.strict) + '=' + encode(val, opts.strict);
 	}).filter(function (x) {
 		return x.length > 0;
 	}).join('&') : '';
